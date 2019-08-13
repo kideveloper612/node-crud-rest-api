@@ -62,5 +62,5 @@ var options = {
 //console.log("KEY: ", options.key)  
 //console.log("CERT: ", options.cert)  
 var secureServer = https.createServer(options, app).listen(httpsPort, () => {  
-    console.log(">> CentraliZr listening at port " + httpsPort);  
+    console.log(">> Listening at port " + httpsPort);  
 });  
