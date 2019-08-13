@@ -49,7 +49,7 @@ exports.create = async (req, res) => {
     //Hash Passwords
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(req.body.password, salt);
-
+    
     // Create a User
     const user = new User({
         password: hashedPassword || "Untitled User",

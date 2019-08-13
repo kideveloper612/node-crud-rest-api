@@ -6,12 +6,12 @@ const validator = require('validator')
 const bcrypt = require('bcrypt');
 
 const AdminSchema = mongoose.Schema({
-    username: {
-        type: String,
-              unique : true,
-              required : true,
-              default: null
-    },
+    // username: {
+    //     type: String,
+    //           unique : true,
+    //           required : true,
+    //           default: null
+    // },
     email: {
         type: String,
         unique: true,

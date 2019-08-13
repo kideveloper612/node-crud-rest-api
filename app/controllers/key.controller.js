@@ -43,7 +43,7 @@ exports.create = async (req, res) => {
     //Checking if the key is already in the database
     const keyExist = await Key.findOne({ key_stockNo: req.body.key_stockNo });
     if (keyExist) return res.status(400).send('key already exists');
-
+console.log(req.body.last_detected_on)
     // Create a key
     const key = new Key({
         'key_stockNo': req.body.key_stockNo,

@@ -4,6 +4,7 @@ var bodyParser = require('body-parser');
 router.use(bodyParser.urlencoded({ extended: false }));
 router.use(bodyParser.json());
 var Admin = require('../app/models/admin.model');
+require('dotenv').config();
 
 var jwt = require('jsonwebtoken');
 var bcrypt = require('bcryptjs');
@@ -16,14 +17,15 @@ var VerifyToken = require('./VerifyToken');
 const insertUpdateValidation = data => {
 
   const schema = {
-      username: Joi.string().min(6).required(),
-      email: Joi.string().min(6).required().email(),
-      password: Joi.string().min(6).required()
+    //username: Joi.string().min(6).required(),
+    email: Joi.string().min(6).required().email(),
+    password: Joi.string().min(6).required()
   };
 
   return Joi.validate(data, schema);
 }
-router.post('/register',async function (req, res) {
+
+router.post('/registerAdmin', async function (req, res) {
 
   //Lets validate data before we a user
   const { error } = insertUpdateValidation(req.body);
@@ -55,13 +57,24 @@ router.post('/register',async function (req, res) {
     });
 });
 
+router.post('/register', async function (req, res) {
+  //Lets validate data before we a user
+  const { error } = insertUpdateValidation(req.body);
+  if (error) return res.status(400).send(error.details[0].message)
+
+  if(req.body.email !== process.env.adminEmail) return res.json({'auth': false, 'message': 'InValid Email'});
+  if(req.body.password !== process.env.password) return res.json({'auth': false, 'message': 'InValid Password'});
+  var token = jwt.sign({ email: process.env.adminEmail }, config.secret);
+  res.status(200).send({ auth: true, token: token });
+})
+
 
 router.post('/login', async function (req, res) {
 
   Admin.findOne({ email: req.body.email }, async function (err, user) {
     if (err) return res.status(500).send('Error on the server.');
     if (!user) return res.status(404).send('No user found.');
-    
+
     var passwordIsValid = bcrypt.compare(req.body.password, user.password);
     if (!passwordIsValid) return res.status(401).send({ auth: false, token: null });
 
