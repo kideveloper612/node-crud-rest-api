@@ -1,7 +1,8 @@
+//set mongoose database connecting
 const mongoose = require('mongoose');
 mongoose.set('useNewUrlParser', true);
 mongoose.set('useCreateIndex', true);
-
+//format key collection
 const KeySchema = mongoose.Schema({
       key_stockNo:{
                    type: String,
@@ -43,7 +44,7 @@ const KeySchema = mongoose.Schema({
     timestamps: true
 });
 
-
 KeySchema.index({key_stockNo: 1, key_mac: 1, license: 1}, {unique: true});
 
+//exporting module
 module.exports = mongoose.model('Key', KeySchema);

@@ -1,21 +1,11 @@
-// const mongoose = require('mongoose');
-
-// const NoteSchema = mongoose.Schema({
-//     title: String,
-//     content: String
-// }, {
-//     timestamps: true
-// });
-
-// module.exports = mongoose.model('Note', NoteSchema);
-
+//set mongoose database connecting
 const mongoose = require('mongoose');
 mongoose.set('useNewUrlParser', true);
 mongoose.set('useCreateIndex', true);
-
+//import module for email validate
 const validator = require('validator')
 const bcrypt = require('bcrypt');
-
+//format user collection
 const UserSchema = mongoose.Schema({
     email:{
            type: String,
@@ -80,7 +70,7 @@ const UserSchema = mongoose.Schema({
     timestamps: true
 });
 
-
+//confirm password befor save user data in database
 UserSchema.pre('save', async function (next) {
     // Hash the password before saving the user model
     const user = this
@@ -90,6 +80,5 @@ UserSchema.pre('save', async function (next) {
     next()
 })
 
-
-
+//exporting module
 module.exports = mongoose.model('User', UserSchema);

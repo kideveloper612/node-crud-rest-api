@@ -1,5 +1,8 @@
+//import module for verifying token
 var VerifyToken = require('../../auth/VerifyToken');
+//module exporting
 module.exports = (app) => {
+    //
     const users = require('../controllers/user.controller.js');
     const keys = require('../controllers/key.controller.js');
     
@@ -39,4 +42,3 @@ module.exports = (app) => {
      // Delete a key with key_stockNo
      app.delete('/keys/:key_stockNo', VerifyToken, keys.delete);
 }
-

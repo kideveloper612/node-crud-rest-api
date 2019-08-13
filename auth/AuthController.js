@@ -1,33 +1,35 @@
+//import modules needed
 var express = require('express');
 var router = express.Router();
 var bodyParser = require('body-parser');
-router.use(bodyParser.urlencoded({ extended: false }));
-router.use(bodyParser.json());
 var Admin = require('../app/models/admin.model');
-require('dotenv').config();
-
 var jwt = require('jsonwebtoken');
 var bcrypt = require('bcryptjs');
 var Joi = require('@hapi/joi');
-
 var config = require('../config/config');
 
-var VerifyToken = require('./VerifyToken');
+//import module for using .env file
+require('dotenv').config();
 
+//set type of request data
+router.use(bodyParser.urlencoded({ extended: false }));
+router.use(bodyParser.json());
+
+//Validation for insert creating and updating data
 const insertUpdateValidation = data => {
-
+  //set dafault of data validation
   const schema = {
     //username: Joi.string().min(6).required(),
     email: Joi.string().min(6).required().email(),
     password: Joi.string().min(6).required()
   };
-
   return Joi.validate(data, schema);
 }
 
+//process for registering in admin database
 router.post('/registerAdmin', async function (req, res) {
 
-  //Lets validate data before we a user
+  //Lets validate data
   const { error } = insertUpdateValidation(req.body);
   if (error) return res.status(400).send(error.details[0].message)
 
@@ -39,6 +41,7 @@ router.post('/registerAdmin', async function (req, res) {
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(req.body.password, salt);
 
+  //admin collection create
   Admin.create({
     username: req.body.username,
     email: req.body.email,
@@ -57,37 +60,42 @@ router.post('/registerAdmin', async function (req, res) {
     });
 });
 
+//register using promised email and password
 router.post('/register', async function (req, res) {
-  //Lets validate data before we a user
+  //Lets validate data
   const { error } = insertUpdateValidation(req.body);
   if (error) return res.status(400).send(error.details[0].message)
 
-  if(req.body.email !== process.env.adminEmail) return res.json({'auth': false, 'message': 'InValid Email'});
-  if(req.body.password !== process.env.password) return res.json({'auth': false, 'message': 'InValid Password'});
+  //confirm email and password vs promised email and password
+  if (req.body.email !== process.env.adminEmail) return res.json({ 'auth': false, 'message': 'InValid Email' });
+  if (req.body.password !== process.env.password) return res.json({ 'auth': false, 'message': 'InValid Password' });
   var token = jwt.sign({ email: process.env.adminEmail }, config.secret);
   res.status(200).send({ auth: true, token: token });
 })
 
-
+//process for login using registered email and password
 router.post('/login', async function (req, res) {
-
+  //find user from admin database using email
   Admin.findOne({ email: req.body.email }, async function (err, user) {
+    //confirm if user with requested email exists
     if (err) return res.status(500).send('Error on the server.');
     if (!user) return res.status(404).send('No user found.');
-
+    //confrim if password matches
     var passwordIsValid = bcrypt.compare(req.body.password, user.password);
     if (!passwordIsValid) return res.status(401).send({ auth: false, token: null });
-
+    //generate token if everything is good
     var token = jwt.sign({ id: user._id }, config.secret, {
       expiresIn: 86400 // expires in 24 hours
     });
-
     res.status(200).send({ auth: true, token: token });
   });
 
 });
 
+//remove token with logout
 router.get('/logout', function (req, res) {
   res.status(200).send({ auth: false, token: null });
 });
+
+//exporting module
 module.exports = router;

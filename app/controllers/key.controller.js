@@ -1,14 +1,13 @@
+//import needed modules
 const Key = require('../models/key.model.js');
-const bcrypt = require('bcryptjs');
-const config = require('../../config/config');
-const jwt = require('jsonwebtoken');
-//Validation
+//import module for validation
 const Joi = require('@hapi/joi');
+//configuar connectin to database
 const mongoose = require('mongoose');
 mongoose.set('useFindAndModify', false);
-//Register Validation
+//Register Validation for insert data
 const insertValidation = data => {
-
+    //validation format of insert data
     const schema = {
         key_stockNo: Joi.string().required(),
         key_mac: Joi.string().required(),
@@ -17,11 +16,12 @@ const insertValidation = data => {
         last_detected_by: Joi.string().required(),
         last_signal_strength: Joi.string().required()
     };
-
+    //validating nad return result
     return Joi.validate(data, schema);
 }
+//Register Validation for update data
 const updateValidation = data => {
-
+    //validation format of update data
     const schema = {
         key_mac: Joi.string().required(),
         license: Joi.string().required(),
@@ -29,7 +29,7 @@ const updateValidation = data => {
         last_detected_by: Joi.string().required(),
         last_signal_strength: Joi.string().required()
     };
-
+    //validating and return result
     return Joi.validate(data, schema);
 }
 
@@ -39,11 +39,10 @@ exports.create = async (req, res) => {
     const { error } = insertValidation(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
-
     //Checking if the key is already in the database
     const keyExist = await Key.findOne({ key_stockNo: req.body.key_stockNo });
     if (keyExist) return res.status(400).send('key already exists');
-console.log(req.body.last_detected_on)
+
     // Create a key
     const key = new Key({
         'key_stockNo': req.body.key_stockNo,
@@ -68,7 +67,7 @@ console.log(req.body.last_detected_on)
 
 // Retrieve and return all keys from the database.
 exports.findAll = (req, res) => {
-    console.log("sdgfsdg")
+    //find all keys from database
     Key.find()
         .then(keys => {
             res.send(keys);
@@ -81,6 +80,7 @@ exports.findAll = (req, res) => {
 
 // Find all keys with a license
 exports.findKeysByLicense = (req, res) => {
+    //find keys using license and return the result
     Key.find({ license: req.params.license })
         .then(key => {
             if (!key) {
@@ -101,9 +101,9 @@ exports.findKeysByLicense = (req, res) => {
         });
 };
 
-
 // Find a single key with a key_stockNo
 exports.findKeyBykey_stockNo = (req, res) => {
+    //find a key using a key_stodkNo and return the result
     Key.find({ key_stockNo: req.params.key_stockNo })
         .then(key => {
             if (!key) {
@@ -123,13 +123,15 @@ exports.findKeyBykey_stockNo = (req, res) => {
             });
         });
 };
-// Update a user identified by the useremail in the request
+
+// Update a user identified by the key_stockNo in the request
 exports.update = async (req, res) => {
 
     //Lets validate data
     const { error } = updateValidation(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
+    //find a key with key_stockNo and return the result
     Key.findOneAndUpdate({ key_stockNo: req.params.key_stockNo }, {
         $set: {
             'key_mac': req.body.key_mac,
@@ -150,6 +152,7 @@ exports.update = async (req, res) => {
 
 // Delete a user with the specified useremail in the request
 exports.delete = (req, res) => {
+    //find a key with key_stockNo and remove it
     Key.findOneAndRemove(req.params.key_stockNo)
         .then(key => {
             if (!key) {
