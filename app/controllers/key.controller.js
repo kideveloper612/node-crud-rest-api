@@ -14,7 +14,6 @@ const insertValidation = data => {
     const schema = {
         key_stockNo: Joi.string().required(),
         key_mac: Joi.string().required(),
-        last_detected_on: Joi.string().required(),
         last_detected_by: Joi.string().required(),
         last_signal_strength: Joi.string().required()
     };
@@ -26,7 +25,6 @@ const updateValidation = data => {
     //validation format of update data
     const schema = {
         key_mac: Joi.string().required(),
-        last_detected_on: Joi.string().required(),
         last_detected_by: Joi.string().required(),
         last_signal_strength: Joi.string().required()
     };
@@ -62,8 +60,11 @@ exports.create = async (req, res) => {
     if (error) return res.status(400).send(error.details[0].message);
 
     //Checking if the key is already in the database
-    const keyExist = await Key.findOne({ key_stockNo: req.body.key_stockNo });
-    if (keyExist) return res.status(400).send('key already exists');
+    const keyExist = await Key.findOne({ key_stockNo: req.body.key_stockNo, license: req.license });
+    const macExsit  = await Key.findOne({key_mac: req.body.key_mac, license: req.license});
+    if (keyExist || macExsit) return res.status(400).send('key already exists');
+
+    if(!req.body.last_detected_on) req.body.last_detected_on = Date.now();
 
     // Create a key
     const key = new Key({

@@ -6,7 +6,7 @@ mongoose.set('useCreateIndex', true);
 const KeySchema = mongoose.Schema({
       key_stockNo:{
                    type: String,
-                   unique : true,
+                   unique : false,
                    required : true,
                    default: null
       },
@@ -18,7 +18,7 @@ const KeySchema = mongoose.Schema({
       },
       license:{
                type: String,
-               unique : false,
+               unique : true,
                required : true,
                default: null
       },
