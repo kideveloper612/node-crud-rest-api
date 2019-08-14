@@ -2,9 +2,6 @@
 const Key = require('../models/key.model.js');
 //import module for validation
 const Joi = require('@hapi/joi');
-//configuar connectin to database
-const mongoose = require('mongoose');
-mongoose.set('useFindAndModify', false);
 //Register Validation for insert data
 const insertValidation = data => {
     //validation format of insert data
@@ -63,7 +60,6 @@ exports.create = async (req, res) => {
             });
         });
 };
-
 
 // Retrieve and return all keys from the database.
 exports.findAll = (req, res) => {

@@ -73,29 +73,5 @@ router.post('/register', async function (req, res) {
   res.status(200).send({ auth: true, token: token });
 })
 
-//process for login using registered email and password
-router.post('/login', async function (req, res) {
-  //find user from admin database using email
-  Admin.findOne({ email: req.body.email }, async function (err, user) {
-    //confirm if user with requested email exists
-    if (err) return res.status(500).send('Error on the server.');
-    if (!user) return res.status(404).send('No user found.');
-    //confrim if password matches
-    var passwordIsValid = bcrypt.compare(req.body.password, user.password);
-    if (!passwordIsValid) return res.status(401).send({ auth: false, token: null });
-    //generate token if everything is good
-    var token = jwt.sign({ id: user._id }, config.secret, {
-      expiresIn: 86400 // expires in 24 hours
-    });
-    res.status(200).send({ auth: true, token: token });
-  });
-
-});
-
-//remove token with logout
-router.get('/logout', function (req, res) {
-  res.status(200).send({ auth: false, token: null });
-});
-
 //exporting module
 module.exports = router;

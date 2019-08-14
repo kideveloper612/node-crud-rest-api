@@ -70,7 +70,7 @@ const UserSchema = mongoose.Schema({
     timestamps: true
 });
 
-//confirm password befor save user data in database
+//confirm password before save user data in database
 UserSchema.pre('save', async function (next) {
     // Hash the password before saving the user model
     const user = this

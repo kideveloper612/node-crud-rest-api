@@ -2,13 +2,19 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const authRoute = require('./auth/AuthController');
-// create express app
+// create express app and keyapp
 const app = express();
+const keyapp = express();
 
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
 // parse requests of content-type - application/json
 app.use(bodyParser.json());
+
+// parse requests of content-type - application/x-www-form-urlencoded
+keyapp.use(bodyParser.urlencoded({ extended: true }));
+// parse requests of content-type - application/json
+keyapp.use(bodyParser.json());
 
 //Confgiuaring the database
 const dbConfig = require('./config/database.config');
@@ -28,8 +34,9 @@ mongoose.connect(dbConfig.url, {
 
 // Require Notes routes
 require('./app/routes/user.routes.js')(app);
+require('./app/routes/key.routes.js')(keyapp);
 
-//register and login
+//authenticate
 app.use('/', authRoute);
 
 // express doesn't consider not found 404 as an error so we need to handle 404 it explicitly
@@ -49,8 +56,26 @@ app.use(function(err, req, res, next) {
     res.status(500).json({message: "Something looks wrong !!!", err: err});
 });
 
+// handle 404 error
+keyapp.use(function(req, res, next) {
+	let err = new Error('Not Found');
+    err.status = 404;
+    next(err);
+});
+
+// handle errors
+keyapp.use(function(err, req, res, next) {
+	console.log(err);
+  if(err.status === 404)
+  	res.status(404).json({message: "Not found"});
+  else	
+    res.status(500).json({message: "Something looks wrong !!!", err: err});
+});
+
 //create https server
-const httpsPort = 3000;  
+const httpsPort_user = 3000;
+const httpsPort_key = 3001;
+
 var https = require('https');  
 var fs = require('fs');  
 var options = {  
@@ -58,6 +83,10 @@ var options = {
     cert: fs.readFileSync('./server.crt', 'utf8')  
 }; 
 
-https.createServer(options, app).listen(httpsPort, () => {  
-    console.log("Server: Listening at port " + httpsPort);  
+https.createServer(options, app).listen(httpsPort_user, () => {  
+    console.log("Server: Listening at port " + httpsPort_user);  
 });  
+
+https.createServer(options, keyapp).listen(httpsPort_key, () => {
+    console.log("Server: Listening at port " + httpsPort_key);
+})

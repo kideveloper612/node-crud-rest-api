@@ -1,8 +1,6 @@
 //import needed modules
 const User = require('../models/user.model.js');
 const bcrypt = require('bcryptjs');
-const config = require('../../config/config');
-const jwt = require('jsonwebtoken');
 //Validation
 const Joi = require('@hapi/joi');
 const mongoose = require('mongoose');
@@ -76,27 +74,6 @@ exports.create = async (req, res) => {
                 message: err.message || "Some error occurred while creating the User."
             });
         });
-};
-
-//Authenticate using email
-exports.authenticate = function (req, res) {
-    //find user from user database using email
-    User.findOne({ email: req.body.email }, function (err, userInfo) {
-        //return if error occurs
-        if (err) {
-            res.status(500).send({ status: "error", message: "Not found email!" });
-            return (err);
-        } else {
-            //generate token using id and return the token
-            if (userInfo != null && bcrypt.compare(req.body.password, userInfo.password)) {
-                const token = jwt.sign({ id: userInfo._id }, config.secret, { expiresIn: '1h' });
-                res.json({ status: "success", message: "user found!!!", data: { user: userInfo, token: token } });
-            } else {
-                //return if user does not exist and password does not match
-                res.json({ status: "error", message: "Invalid email/password!!!", data: null });
-            }
-        }
-    });
 };
 
 // Retrieve and return all users from the database.
