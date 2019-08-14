@@ -14,7 +14,6 @@ const insertValidation = data => {
     const schema = {
         key_stockNo: Joi.string().required(),
         key_mac: Joi.string().required(),
-        license: Joi.string().required(),
         last_detected_on: Joi.string().required(),
         last_detected_by: Joi.string().required(),
         last_signal_strength: Joi.string().required()
@@ -27,7 +26,6 @@ const updateValidation = data => {
     //validation format of update data
     const schema = {
         key_mac: Joi.string().required(),
-        license: Joi.string().required(),
         last_detected_on: Joi.string().required(),
         last_detected_by: Joi.string().required(),
         last_signal_strength: Joi.string().required()
@@ -59,7 +57,6 @@ exports.authenticate = function (req, res) {
 
 // Create and Save a new User
 exports.create = async (req, res) => {
-    console.log(req.license);
     //Lets validate data
     const { error } = insertValidation(req.body);
     if (error) return res.status(400).send(error.details[0].message);
