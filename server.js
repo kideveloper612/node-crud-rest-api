@@ -30,7 +30,7 @@ mongoose.connect(dbConfig.url, {
 require('./app/routes/user.routes.js')(app);
 
 //register and login
-app.use('/api/user', authRoute);
+app.use('/', authRoute);
 
 // express doesn't consider not found 404 as an error so we need to handle 404 it explicitly
 // handle 404 error
@@ -56,9 +56,8 @@ var fs = require('fs');
 var options = {  
     key: fs.readFileSync('./key.pem', 'utf8'),  
     cert: fs.readFileSync('./server.crt', 'utf8')  
-};  
-//console.log("KEY: ", options.key)  
-//console.log("CERT: ", options.cert)  
-var secureServer = https.createServer(options, app).listen(httpsPort, () => {  
-    console.log(">> Listening at port " + httpsPort);  
+}; 
+
+https.createServer(options, app).listen(httpsPort, () => {  
+    console.log("Server: Listening at port " + httpsPort);  
 });  
