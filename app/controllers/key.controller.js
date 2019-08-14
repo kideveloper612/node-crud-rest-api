@@ -1,5 +1,11 @@
 //import needed modules
-const Key = require('../models/key.model.js');
+const Key = require('../models/key.model');
+const User = require('../models/user.model');
+//import module for authenticating
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+//import env file
+require('dotenv').config()
 //import module for validation
 const Joi = require('@hapi/joi');
 //Register Validation for insert data
@@ -30,8 +36,30 @@ const updateValidation = data => {
     return Joi.validate(data, schema);
 }
 
+//Authenticate using email
+exports.authenticate = function (req, res) {
+    //find user from user database using email
+    User.findOne({ email: req.body.email }, function (err, userInfo) {
+        //return if error occurs
+        if (err) {
+            res.status(500).send({ status: "error", message: "Not found email!" });
+            return (err);
+        } else {
+            //generate token using id and return the token
+            if (userInfo != null && bcrypt.compare(req.body.password, userInfo.password)) {
+                const token = jwt.sign({ license: userInfo.license }, process.env.SECRET, { expiresIn: '1h' });
+                res.json({ status: "success", message: "User found!!!", token: token });
+            } else {
+                //return if user does not exist and password does not match
+                res.json({ status: "error", message: "Invalid email/password!!!", data: null });
+            }
+        }
+    });
+};
+
 // Create and Save a new User
 exports.create = async (req, res) => {
+    console.log(req.license);
     //Lets validate data
     const { error } = insertValidation(req.body);
     if (error) return res.status(400).send(error.details[0].message);
@@ -44,7 +72,7 @@ exports.create = async (req, res) => {
     const key = new Key({
         'key_stockNo': req.body.key_stockNo,
         'key_mac': req.body.key_mac,
-        'license': req.body.license,
+        'license': req.license,
         'last_detected_on': req.body.last_detected_on,
         'last_detected_by': req.body.last_detected_by,
         'last_signal_strength': req.body.last_signal_strength
@@ -62,22 +90,9 @@ exports.create = async (req, res) => {
 };
 
 // Retrieve and return all keys from the database.
-exports.findAll = (req, res) => {
-    //find all keys from database
-    Key.find()
-        .then(keys => {
-            res.send(keys);
-        }).catch(err => {
-            res.status(500).send({
-                message: err.message || "Some error occurred while retrieving keys."
-            });
-        });
-};
-
-// Find all keys with a license
-exports.findKeysByLicense = (req, res) => {
+exports.findAll = (req, res) => {    
     //find keys using license and return the result
-    Key.find({ license: req.params.license })
+    Key.find({ license: req.license })
         .then(key => {
             if (!key) {
                 return res.status(404).send({
@@ -100,7 +115,7 @@ exports.findKeysByLicense = (req, res) => {
 // Find a single key with a key_stockNo
 exports.findKeyBykey_stockNo = (req, res) => {
     //find a key using a key_stodkNo and return the result
-    Key.find({ key_stockNo: req.params.key_stockNo })
+    Key.find({ key_stockNo: req.params.key_stockNo, license: req.license })
         .then(key => {
             if (!key) {
                 return res.status(404).send({
@@ -128,10 +143,10 @@ exports.update = async (req, res) => {
     if (error) return res.status(400).send(error.details[0].message);
 
     //find a key with key_stockNo and return the result
-    Key.findOneAndUpdate({ key_stockNo: req.params.key_stockNo }, {
+    Key.findOneAndUpdate({ key_stockNo: req.params.key_stockNo, license: req.license }, {
         $set: {
             'key_mac': req.body.key_mac,
-            'license': req.body.license,
+            'license': req.license,
             'last_detected_on': req.body.last_detected_on,
             'last_detected_by': req.body.last_detected_by,
             'last_signal_strength': req.body.last_signal_strength
@@ -149,7 +164,7 @@ exports.update = async (req, res) => {
 // Delete a user with the specified useremail in the request
 exports.delete = (req, res) => {
     //find a key with key_stockNo and remove it
-    Key.findOneAndRemove(req.params.key_stockNo)
+    Key.findOneAndRemove({key_stockNo: req.params.key_stockNo, license: req.license})
         .then(key => {
             if (!key) {
                 return res.status(404).send({

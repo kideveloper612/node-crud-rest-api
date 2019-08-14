@@ -63,7 +63,7 @@ exports.create = async (req, res) => {
         tokens: []
     });
     //input token in database as a array
-    user.tokens.push({ token: req.headers['access-token'] });
+    //user.tokens.push({ token: req.headers['access-token'] });
 
     // Save User in the database
     user.save()

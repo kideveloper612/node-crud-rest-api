@@ -1,7 +1,6 @@
 //import needed modules
 const express = require('express');
 const bodyParser = require('body-parser');
-const authRoute = require('./auth/AuthController');
 // create express app and keyapp
 const app = express();
 const keyapp = express();
@@ -35,9 +34,6 @@ mongoose.connect(dbConfig.url, {
 // Require Notes routes
 require('./app/routes/user.routes.js')(app);
 require('./app/routes/key.routes.js')(keyapp);
-
-//authenticate
-app.use('/', authRoute);
 
 // express doesn't consider not found 404 as an error so we need to handle 404 it explicitly
 // handle 404 error
@@ -73,8 +69,8 @@ keyapp.use(function(err, req, res, next) {
 });
 
 //create https server
-const httpsPort_user = 3000;
-const httpsPort_key = 3001;
+const httpsPort_user = 3001;
+const httpsPort_key = 3000;
 
 var https = require('https');  
 var fs = require('fs');  
