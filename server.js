@@ -38,7 +38,7 @@ require('./app/routes/key.routes.js')(keyapp);
 // express doesn't consider not found 404 as an error so we need to handle 404 it explicitly
 // handle 404 error
 app.use(function(req, res, next) {
-	let err = new Error('Not Found');
+	let err = new Error('Not Found the url');
     err.status = 404;
     next(err);
 });
@@ -47,14 +47,14 @@ app.use(function(req, res, next) {
 app.use(function(err, req, res, next) {
 	console.log(err);
   if(err.status === 404)
-  	res.status(404).json({message: "Not found"});
+  	res.status(404).json({message: "Not found the url"});
   else	
     res.status(500).json({message: "Something looks wrong !!!", err: err});
 });
 
 // handle 404 error
 keyapp.use(function(req, res, next) {
-	let err = new Error('Not Found');
+	let err = new Error('Not Found the url');
     err.status = 404;
     next(err);
 });
@@ -63,7 +63,7 @@ keyapp.use(function(req, res, next) {
 keyapp.use(function(err, req, res, next) {
 	console.log(err);
   if(err.status === 404)
-  	res.status(404).json({message: "Not found"});
+  	res.status(404).json({message: "Not found the url"});
   else	
     res.status(500).json({message: "Something looks wrong !!!", err: err});
 });

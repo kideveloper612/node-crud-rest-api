@@ -3,8 +3,7 @@ const mongoose = require('mongoose');
 mongoose.set('useNewUrlParser', true);
 mongoose.set('useCreateIndex', true);
 //import module for email validate
-const validator = require('validator')
-const bcrypt = require('bcrypt');
+const validator = require('validator');
 //format user collection
 const UserSchema = mongoose.Schema({
     email:{
@@ -69,16 +68,6 @@ const UserSchema = mongoose.Schema({
 }, {
     timestamps: true
 });
-
-//confirm password before save user data in database
-UserSchema.pre('save', async function (next) {
-    // Hash the password before saving the user model
-    const user = this
-    if (user.isModified('password')) {
-        user.password = await bcrypt.hash(user.password, 8)
-    }
-    next()
-})
 
 //exporting module
 module.exports = mongoose.model('User', UserSchema);

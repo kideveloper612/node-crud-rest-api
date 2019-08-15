@@ -9,7 +9,7 @@ mongoose.set('useFindAndModify', false);
 const insertValidation = data => {
     //insert data validaion format
     const schema = {
-        email: Joi.string().min(6).required().email(),
+        email: Joi.string().required().email(),
         password: Joi.string().min(6).required(),
         companyName: Joi.string().required(),
         companyPhone: Joi.string().required(),
@@ -25,19 +25,20 @@ const insertValidation = data => {
 const updateValidation = data => {
     //updata data validation format
     const schema = {
-        password: Joi.string().min(6).required(),
-        companyName: Joi.string().required(),
-        companyPhone: Joi.string().required(),
-        contactName: Joi.string().required(),
-        address: Joi.string().required(),
-        license: Joi.string().required(),
-        isActive: Joi.boolean().required()
+        password: Joi.string().min(6),
+        companyName: Joi.string(),
+        companyPhone: Joi.string(),
+        contactName: Joi.string(),
+        address: Joi.string(),
+        license: Joi.string(),
+        isActive: Joi.boolean()
     };
     //validation updata data on schema
     return Joi.validate(data, schema);
 }
 // Create and Save a new User
 exports.create = async (req, res) => {
+    
     //Lets validate data
     const { error } = insertValidation(req.body);
     if (error) return res.status(400).send(error.details[0].message)
@@ -46,13 +47,17 @@ exports.create = async (req, res) => {
     const emailExist = await User.findOne({ email: req.body.email });
     if (emailExist) return res.status(400).send('Email already exists');
 
+    //Checking if license duplicates
+    const licenseExist = await User.findOne({license: req.body.license});
+    if (licenseExist) return res.status(400).send("license already exists");
+
     //Hash Passwords
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(req.body.password, salt);
-
+    
     // Create a User
     const user = new User({
-        password: hashedPassword || "Untitled User",
+        password: hashedPassword,
         email: req.body.email,
         companyName: req.body.companyName,
         companyPhone: req.body.companyPhone,
@@ -119,8 +124,26 @@ exports.update = async (req, res) => {
 
     //Lets validate data
     const { error } = updateValidation(req.body);
-    if (error) return res.status(400).send(error.details[0].message)
+    if (error) return res.status(400).send(error.details[0].message);
 
+    //get existing value in the database with email
+    const savedValue = await User.find({ email: req.params.email });
+    
+    //use existing value if req.body.password field is empty
+    if (!req.body.password)  req.body.password = savedValue[0].password;
+    //use existing value if req.body.password field is empty
+    if (!req.body.companyName)  req.body.companyName = savedValue[0].companyName;
+    //use existing value if req.body.password field is empty
+    if (!req.body.companyPhone)  req.body.companyPhone = savedValue[0].companyPhone;
+    //use existing value if req.body.password field is empty
+    if (!req.body.contactName)  req.body.contactName = savedValue[0].contactName;
+    //use existing value if req.body.password field is empty
+    if (!req.body.address)  req.body.address = savedValue[0].address;
+    //use existing value if req.body.password field is empty
+    if (!req.body.license)  req.body.license = savedValue[0].license;
+    //use existing value if req.body.password field is empty
+    if (!req.body.isActive)  req.body.isActive = savedValue[0].isActive;
+    
     //Hash Passwords
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(req.body.password, salt);
